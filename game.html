@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lif RBT Pro: Mall Odyssey! ⚙️✨</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* --- Palet Warna Crayon Shin-chan --- */
+            --shinchan-red: #FF4B4B;    /* Baju */
+            --shinchan-yellow: #FFD93D; /* Seluar */
+            --shinchan-blue: #6ECBFF;   /* Kasut/Ceria */
+            --shinchan-skin: #FFD8BE;   /* Kulit */
+            --tech-dark: #243b55;       /* Kekal untuk kontras teks game */
+            --glass: rgba(255, 255, 255, 0.2);
+            
+            /* Warna asal lift (dikekalkan untuk bahagian game) */
+            --cute-blue: #00d2ff;
+            --cute-pink: #ff758c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Jua', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #0f2027; 
+            color: #fff;
+        }
+
+        /* --- Animasi Butang Sentiasa Bergerak --- */
+        @keyframes buttonPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px var(--cute-blue); }
+            50% { box-shadow: 0 0 20px var(--cute-blue); }
+            100% { box-shadow: 0 0 5px var(--cute-blue); }
+        }
+
+        /* --- Animasi Manual Hover --- */
+        @keyframes manualWobble {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+            75% { transform: rotate(-1deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* --- Latar Belakang Super Dinamik --- */
+        .bg-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        }
+
+        .floating {
+            position: absolute; font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            opacity: 0.4; user-select: none;
+        }
+
+        @keyframes moveAcross {
+            from { transform: translate(-10vw, 0) rotate(0deg); }
+            to { transform: translate(110vw, 20vh) rotate(360deg); }
+        }
+
+        .particle {
+            position: absolute; background: white; border-radius: 50%;
+            pointer-events: none; opacity: 0.5; animation: floatParticle 10s infinite linear;
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+        }
+
+        /* --- Main Menu --- */
+        #main-menu {
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            z-index: 1000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: all 1s cubic-bezier(1, 0, 0, 1);
+            overflow: hidden;
+        }
+
+        #main-menu::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+            opacity: 0.3;
+        }
+
+        .menu-title {
+            font-size: 4rem;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5), 4px 4px 0 var(--shinchan-red);
+            color: var(--shinchan-yellow);
+            text-align: center; margin-bottom: 1rem; animation: titlePulse 2s infinite ease-in-out;
+            letter-spacing: 2px;
+            z-index: 1;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1) rotate(-1deg); }
+            50% { transform: scale(1.05) rotate(1deg); }
+        }
+
+        .instruction-container {
+            display: flex; align-items: center; gap: 20px; margin-bottom: 2rem;
+            z-index: 1;
+        }
+
+        .manual-card {
+            width: 320px; height: 220px; perspective: 1000px; cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .manual-card:hover {
+            transform: scale(1.05); /* Sedikit zoom bila hover */
+            animation: manualWobble 0.5s ease-in-out infinite;
+        }
+
+        .manual-inner {
+            position: relative; width: 100%; height: 100%;
+            text-align: center; transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .manual-card.flipped .manual-inner { transform: rotateY(180deg); }
+
+        .manual-front, .manual-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden; border-radius: 20px;
+            padding: 20px; display: flex; flex-direction: column;
+            justify-content: flex-start; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 6px solid white; color: #333;
+            overflow: hidden; /* Elak ayat keluar */
+        }
+
+        .manual-front { background: #fff; border-color: var(--shinchan-yellow); }
+        .manual-back { background: #fff; border-color: var(--shinchan-red); transform: rotateY(180deg); }
+
+        .manual-front h3, .manual-back h3 { 
+            margin: 0 0 10px 0; color: var(--shinchan-red); font-size: 1.4rem; 
+        }
+
+        .manual-front p, .manual-back p { 
+            font-size: 0.95rem; margin: 4px 0; line-height: 1.3; 
+            width: 100%; text-align: left; font-weight: bold;
+        }
+
+        .cat-helper { display: flex; flex-direction: column; align-items: center; }
+        .bubble {
+            background: white; border-radius: 15px; padding: 10px;
+            color: #333; font-size: 0.85rem; position: relative;
+            margin-bottom: 10px; box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            font-weight: bold; width: 150px; text-align: center;
+        }
+        .bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%;
+            border-left: 10px solid transparent; border-right: 10px solid transparent;
+            border-top: 10px solid white; transform: translateX(-50%);
+        }
+
+        .cat-gif { width: 90px; height: 90px; }
+
+        .btn-start {
+            padding: 20px 60px; font-size: 1.8rem; background: var(--shinchan-yellow);
+            color: var(--shinchan-red); border-radius: 100px; cursor: pointer;
+            font-weight: bold; 
+            box-shadow: 0 10px 0 #e6c232, 0 10px 30px rgba(255, 217, 61, 0.3); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 4px solid white;
+            text-transform: uppercase; letter-spacing: 1px; z-index: 1;
+            animation: buttonPulse 1.5s infinite ease-in-out;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-12px) scale(1.05);
+            box-shadow: 0 20px 0 #e6c232, 0 25px 40px rgba(0,0,0,0.4);
+            background: #fff;
+            color: var(--shinchan-red);
+            animation: none;
+        }
+
+        .btn-start:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 4px 0 #e6c232, 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        #music-toggle {
+            position: absolute; top: 20px; right: 20px;
+            padding: 10px 20px; font-size: 1.2rem; background: rgba(255,255,255,0.2);
+            color: #fff; border: 2px solid #fff; border-radius: 20px; cursor: pointer;
+            font-weight: bold; transition: 0.3s; backdrop-filter: blur(10px);
+        }
+
+        /* --- Game Scene --- */
+        #game-scene {
+            display: none; height: 100vh;
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #elevator-frame {
+            width: 950px; height: 92vh;
+            background: rgba(255, 255, 255, 0.1); border: 4px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(15px); border-radius: 40px;
+            position: relative; display: flex; box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+        }
+
+        .floor-indicator {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            background: #000; padding: 5px 40px; border: 3px solid var(--cute-blue);
+            color: var(--cute-blue); font-family: 'Courier New', monospace;
+            font-size: 28px; font-weight: bold; border-radius: 10px;
+            box-shadow: 0 0 20px var(--cute-blue); letter-spacing: 2px;
+        }
+
+        .control-panel {
+            width: 90px; height: 380px; background: rgba(0, 0, 0, 0.7);
+            position: absolute; right: 25px; top: 50%; transform: translateY(-50%);
+            border-radius: 20px; border: 2px solid #555;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 15px; padding: 10px;
+        }
+
+        .panel-btn {
+            width: 50px; height: 50px; background: rgba(255,255,255,0.1);
+            border-radius: 50%; border: 2px solid #fff; color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 20px; cursor: pointer; transition: 0.3s;
+            animation: buttonPulse 2s infinite ease-in-out;
+        }
+
+        .panel-btn.active { 
+            background: var(--cute-blue); 
+            animation: buttonPulse 1s infinite ease-in-out, glowPulse 2s infinite alternate;
+            border-color: #fff;
+        }
+
+        .btn-call-main {
+            width: 70px; height: 70px; background: #f9d423;
+            border: 3px solid white; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 5px 0 #fb8500; font-weight: bold; color: #333;
+            animation: buttonPulse 1.2s infinite ease-in-out;
+        }
+
+        #elevator-interior {
+            flex: 1; margin: 60px 130px 20px 20px; background: #222;
+            position: relative; overflow: hidden; border-radius: 20px;
+            border: 8px solid #1a1a1a;
+            background-image: linear-gradient(to right, #333 1px, transparent 1px), linear-gradient(to bottom, #333 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        #elevator-car {
+            position: absolute; width: 100%; height: 100%; bottom: 0;
+            background: #f8f9fa; display: flex; flex-direction: column;
+            transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        .lift-move-up { transform: translateY(-100%); }
+        .lift-move-down { transform: translateY(100%); }
+        .lift-prepare-up { transform: translateY(100%); transition: none !important; }
+        .lift-prepare-down { transform: translateY(-100%); transition: none !important; }
+
+        /* --- TEKSTUR PINTU LIF REALISTIK --- */
+        .door-container { position: absolute; inset: 0; display: flex; z-index: 100; }
+        .door {
+            width: 50%; height: 100%; 
+            background: 
+                repeating-linear-gradient(90deg, transparent, transparent 48%, rgba(0,0,0,0.1) 50%, transparent 52%),
+                linear-gradient(135deg, #bdc3c7 0%, #7f8c8d 100%);
+            background-blend-mode: overlay;
+            border: 2px solid #555;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            display: flex; justify-content: center; align-items: center; 
+            font-size: 100px; transition: transform 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+            position: relative;
+        }
+
+        .door.left { border-right: 1px solid #333; }
+        .door.right { border-left: 1px solid #333; }
+
+        .open .door.left { transform: translateX(-100%); }
+        .open .door.right { transform: translateX(100%); }
+        .open.door-container { visibility: hidden; transition: visibility 0s 1.2s; }
+
+        .content {
+            padding: 15px; overflow-y: auto; display: flex;
+            flex-direction: column; align-items: center; opacity: 0; transition: 0.5s; color: #333;
+            font-family: 'Comic Sans MS', cursive;
+        }
+        .show-content .content { opacity: 1; }
+
+        img.lakaran-img {
+            width: auto; height: 180px; max-width: 90%; border: 6px solid #fff;
+            border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%; border-collapse: collapse; font-size: 11px;
+            background: white; border-radius: 10px; overflow: hidden; border: 1px solid #ddd;
+        }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; }
+        th { background: #00d2ff; color: white; }
+        .cat-cell { background: #f0f7ff; font-weight: bold; color: var(--tech-dark); }
+        
+        input[type="radio"] { transform: scale(1.3); cursor: pointer; }
+
+        .feedback { display: none; background: #fff9db; padding: 4px; border-radius: 8px; font-size: 10px; color: #e67e22; }
+
+        .btn-action {
+            margin: 10px; padding: 12px 35px; border-radius: 50px;
+            border: none; background: linear-gradient(to right, #ff758c, #ff9a9e);
+            color: white; font-weight: bold; cursor: pointer;
+            box-shadow: 0 8px 15px rgba(255, 117, 140, 0.3);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        #corner-cat {
+            position: fixed; bottom: 10px; left: 10px;
+            z-index: 2000; display: none; flex-direction: column; align-items: center;
+        }
+        #corner-cat img { width: 90px; }
+    </style>
+</head>
+<body onclick="playBGM()"> <audio id="bgm" src="bgm_mall.mp3" loop></audio>
+    <audio id="sfx-click" src="click_sound.mp3"></audio>
+    <audio id="sfx-elevator" src="elevator_move.mp3"></audio>
+    <audio id="sfx-ding" src="lift_ding.mp3"></audio>
+
+<div class="bg-canvas" id="bg-canvas"></div>
+
+<div id="main-menu">
+    <div class="menu-title">🖍️ Kangar Jaya RBT Mall ✨</div>
+    
+    <div class="instruction-container">
+        <div class="cat-helper">
+            <div class="bubble">Saya nak naik lif, bantu saya! 😸</div>
+            <img src="cat_helper.gif" class="cat-gif" alt="[Cat GIF]">
+        </div>
+
+        <div class="manual-card" onclick="flipManual()">
+            <div class="manual-inner" id="manual-inner">
+                <div class="manual-front">
+                    <h3>📖 Manual Arahan (1/2)</h3>
+                    <p>1. Tekan butang MASUK LIFT!.</p>
+                    <p>2. Tekan butang 'BUKA' untuk masuk lif.</p>
+                    <p>3. Menilai 3 lakaran dengan menekan s-sesuai / ts- tidak sesuai.</p>
+                    <p style="text-align: center; color: #888; font-size: 0.75rem; width:100%; margin-top: auto;">(Klik untuk flip ➔)</p>
+                </div>
+                <div class="manual-back">
+                    <h3>📖 Manual Arahan (2/2)</h3>
+                    <p>4. Tekan butang 'semak jawapan'.</p>
+                    <p>5. Tekan 'ke level seterusnya'.</p>
+                    <p>★ Bantu kucing masuk level 1, 2 & 3!</p>
+                    <p style="text-align: center; color: #888; font-size: 0.75rem; width:100%; margin-top: auto;">(Klik untuk flip ➔)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">MASUK LIFT! 🚀</button>
+</div>
+
+<div id="corner-cat">
+    <div class="bubble" style="font-size: 0.7rem; width: 100px; padding: 5px;">Teruskan bantu saya!</div>
+    <img src="cat_helper.gif" alt="cat">
+</div>
+
+<div id="game-scene">
+    <div id="elevator-frame">
+        <div class="floor-indicator">LEVEL: <span id="indicator-num">1</span></div>
+        
+        <div class="control-panel">
+            <div class="panel-btn" id="p-3" onclick="goToFloor(2)">3</div>
+            <div class="panel-btn" id="p-2" onclick="goToFloor(1)">2</div>
+            <div class="panel-btn active" id="p-1" onclick="goToFloor(0)">1</div>
+            <div style="height: 20px; border-top: 1px solid #555; width: 80%;"></div>
+            <button class="btn-call-main" onclick="openElevator()">BUKA</button>
+        </div>
+
+        <div id="elevator-interior">
+            <div id="elevator-car">
+                <div class="door-container" id="door-container">
+                    <div class="door left">⚙️</div>
+                    <div class="door right">⚡</div>
+                </div>
+
+                <div class="content">
+                    <h3 id="title" style="margin: 0 0 5px 0;">Penilaian Lakaran Projek 1</h3>
+                    <img id="lakaran-image" src="" alt="Lakaran" class="lakaran-img">
+                    <form id="quiz-form">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Elemen</th>
+                                    <th>Kriteria</th>
+                                    <th>S</th>
+                                    <th>TS</th>
+                                    <th>Jawapan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </form>
+                    <div style="display: flex;">
+                        <button class="btn-action" onclick="checkAnswers()">SEMAK JAWAPAN ✨</button>
+                        <button class="btn-action" id="next-btn" style="display:none; background: #00b09b;" onclick="closeAndGoNext()">KE LEVEL SETERUSNYA 🚀</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- AUDIO FUNCTIONS ---
+    const bgm = document.getElementById('bgm');
+    const sfxClick = document.getElementById('sfx-click');
+    const sfxElevator = document.getElementById('sfx-elevator');
+    const sfxDing = document.getElementById('sfx-ding');
+
+    function playBGM() {
+        if (bgm.paused) bgm.play().catch(e => console.log("Audio play blocked"));
+    }
+
+    function playClick() {
+        sfxClick.currentTime = 0;
+        sfxClick.play();
+    }
+
+    function playElevatorSFX() {
+        sfxElevator.currentTime = 0;
+        sfxElevator.play();
+    }
+
+    function playDingSFX() {
+        sfxDing.currentTime = 0;
+        sfxDing.play();
+    }
+
+    function toggleBGM() {
+        if (bgm.paused) {
+            bgm.play().catch(e => console.log("Audio play blocked"));
+            document.getElementById('music-toggle').textContent = 'Pause Music';
+        } else {
+            bgm.pause();
+            document.getElementById('music-toggle').textContent = 'Play Music';
+        }
+    }
+
+    function flipManual() { 
+        playClick();
+        document.querySelector('.manual-card').classList.toggle('flipped'); 
+    }
+
+    function initDynamicBG() {
+        const bg = document.getElementById('bg-canvas');
+        const icons = ['☁️', '⚙️', '🚀', '✨', '🖍️']; 
+        for(let i=0; i<40; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 5 + 2;
+            p.style.width = size + 'px'; p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + '%'; p.style.top = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            bg.appendChild(p);
+        }
+        setInterval(() => {
+            const el = document.createElement('div');
+            el.className = 'floating';
+            el.innerText = icons[Math.floor(Math.random() * icons.length)];
+            el.style.top = Math.random() * 80 + '%'; el.style.left = '-100px';
+            const dur = Math.random() * 10 + 10;
+            el.style.animation = `moveAcross ${dur}s linear forwards`;
+            bg.appendChild(el);
+            setTimeout(() => el.remove(), dur * 1000);
+        }, 4000);
+    }
+
+    const kriteriaData = [
+        { elemen: "Rupa", items: ["Susunan wayar yang kemas (komponen elektrik)","Susunan komponen yang kemas (komponen elektronik)","Susunan komponen mekanikal tidak menjejaskan rupa produk (komponen mekanikal)"] },
+        { elemen: "Bentuk", items: ["Reka letak wayar tidak berselerak (komponen elektrik)","Reka letak papan litar tidak mengganggu bentuk produk (komponen elektronik)","Reka letak komponen mekanikal tidak menggangu bentuk produk (komponen mekanikal)"] },
+        { elemen: "Saiz", items: ["Saiz wayar bersesuaian dengan arus elektrik yang digunakan (komponen elektrik)","Saiz komponen elektronik yang sesuai dengan saiz produk dihasilkan (komponen eletronik)","Saiz komponen mekanikal yang digunakan bersesuaian dengan saiz produk (komponen mekanikal)"] },
+        { elemen: "Ruang", items: ["Ruang jarak antara wayar sesuai (komponen eletrik)","Ruang letak komponen sesuai (komponen elektronik)","Ruang letak komponen mekanikal tidak menganggu fungsi produk (komponen mekanikal)"] }
+    ];
+
+    const gameData = [
+        { id: 1, img: "lakaran1.jpg", answers: ["ts","s","s","s","s","s","s","s","s","ts","s","s"], notes: ["(Saranan: kemaskan susunan wayar)","","","","","","","","","(Saranan: rapatkan wayar)","",""] },
+        { id: 2, img: "lakaran2.jpg", answers: ["ts","s","s","s","s","s","s","ts","ts","ts","s","ts"], notes: ["(Penjelasan: kemasakan susunan wayar)","","","","","","","(Penjelasan: panel solar perlukan saiz besar)","(Penjelasan: perlukan saiz produk besar)","(Saranan: rapatkan wayar)","","(Penjelasan: perlukan ruang besar)"] },
+        { id: 3, img: "lakaran3.jpg", answers: ["ts","s","s","s","s","s","s","s","ts","ts","s","ts"], notes: ["(Penjelasan: kemasakan susunan wayar)","","","","","","","","(Penjelasan: perlukan saiz produk besar)","(Saranan: rapatkan wayar)","","(Penjelasan: perlukan ruang besar)"] }
+    ];
+
+    let currentFloor = 0;
+    let elevatorBusy = false;
+
+    function startGame() {
+        playClick();
+        playBGM();
+        document.getElementById('main-menu').style.transform = 'translateY(-100%)';
+        document.getElementById('corner-cat').style.display = 'flex';
+        setTimeout(() => {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-scene').style.display = 'flex';
+            loadFloor(0);
+        }, 1000);
+    }
+
+    function loadFloor(index, direction = null) {
+        currentFloor = index;
+        const data = gameData[currentFloor];
+        const car = document.getElementById('elevator-car');
+        
+        if (direction === 'up') car.classList.add('lift-prepare-up');
+        else if (direction === 'down') car.classList.add('lift-prepare-down');
+        
+        void car.offsetWidth; 
+
+        document.getElementById('indicator-num').innerText = data.id;
+        document.getElementById('lakaran-image').src = data.img; 
+        document.getElementById('next-btn').style.display = 'none';
+        document.querySelectorAll('.panel-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('p-' + data.id).classList.add('active');
+
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        let globalIndex = 0;
+        kriteriaData.forEach((group) => {
+            group.items.forEach((text, i) => {
+                const row = document.createElement('tr');
+                if (i === 0) {
+                    const catCell = document.createElement('td');
+                    catCell.className = 'cat-cell'; catCell.rowSpan = 3;
+                    catCell.innerText = group.elemen; row.appendChild(catCell);
+                }
+                row.innerHTML += `
+                    <td style="text-align:left;">${text}</td>
+                    <td><input type="radio" name="q${globalIndex}" value="s" onclick="playClick()"></td>
+                    <td><input type="radio" name="q${globalIndex}" value="ts" onclick="playClick()"></td>
+                    <td><div id="ans-${globalIndex}" class="feedback"><b>${data.answers[globalIndex].toUpperCase()}</b><br>${data.notes[globalIndex]}</div></td>
+                `;
+                tbody.appendChild(row);
+                globalIndex++;
+            });
+        });
+
+        car.classList.remove('lift-prepare-up', 'lift-prepare-down', 'lift-move-up', 'lift-move-down');
+        document.getElementById('door-container').classList.remove('open');
+        document.getElementById('door-container').style.visibility = 'visible';
+        
+        setTimeout(() => { elevatorBusy = false; }, 1200);
+    }
+
+    function openElevator() {
+        if(elevatorBusy) return;
+        playClick();
+        playDingSFX();
+        document.getElementById('door-container').classList.add('open');
+        setTimeout(() => {
+            document.getElementById('door-container').style.visibility = 'hidden';
+            document.getElementById('elevator-car').classList.add('show-content');
+        }, 1200);
+    }
+
+    function goToFloor(index) {
+        if(elevatorBusy || index === currentFloor) return;
+        elevatorBusy = true;
+        playClick();
+        playElevatorSFX();
+
+        const car = document.getElementById('elevator-car');
+        const direction = index > currentFloor ? 'up' : 'down';
+
+        car.classList.remove('show-content');
+        document.getElementById('door-container').style.visibility = 'visible';
+        document.getElementById('door-container').classList.remove('open');
+
+        setTimeout(() => {
+            if (direction === 'up') car.classList.add('lift-move-up');
+            else car.classList.add('lift-move-down');
+
+            setTimeout(() => {
+                loadFloor(index, direction);
+            }, 1200);
+        }, 800);
+    }
+
+    function checkAnswers() {
+        playClick();
+        const total = 12; let answered = 0;
+        for (let i = 0; i < total; i++) {
+            const opts = document.getElementsByName('q' + i);
+            if (opts[0].checked || opts[1].checked) answered++;
+        }
+        if (answered < total) {
+            alert("Opps! 😅 Sila lengkapkan semua 12 penilaian sebelum semak jawapan ya!");
+            return;
+        }
+        document.querySelectorAll('.feedback').forEach(f => f.style.display = 'block');
+        document.getElementById('next-btn').style.display = 'inline-block';
+        document.querySelector('.content').scrollTo({top: 1000, behavior: 'smooth'});
+    }
+
+    function closeAndGoNext() {
+        playClick();
+        if(currentFloor < 2) goToFloor(currentFloor + 1);
+        else {
+            alert("MISI SELESAI! 🎉 Anda telah menjadi Pakar Lakaran RBT!");
+            location.reload();
+        }
+    }
+
+    window.onload = () => {
+        initDynamicBG();
+        playBGM();
+    };
+</script>
+
+</body>
+</html>
